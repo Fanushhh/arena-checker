@@ -540,32 +540,6 @@ function importFromJSON(file) {
     reader.readAsText(file);
 }
 
-function clearChampionData(championId, championName) {
-    if (!confirm(`Are you sure you want to delete ALL match data for ${championName}?\n\nThis action cannot be undone!`)) {
-        return;
-    }
-    
-    // Remove champion matches
-    localStorage.removeItem(`arena_matches_${championId}`);
-    
-    // Remove from recent victories
-    const recentVictories = getRecentVictories();
-    const updatedRecent = recentVictories.filter(victory => victory.championId !== championId);
-    localStorage.setItem('arena_recent_victories', JSON.stringify(updatedRecent));
-    
-    // Refresh displays
-    displayRecentVictories();
-    
-    // If this was the current champion, hide the info
-    if (currentChampion && currentChampion.id === championId) {
-        championInfo.style.display = 'none';
-        matchHistory.style.display = 'none';
-        currentChampion = null;
-        searchInput.value = '';
-    }
-    
-    showNotification(`All data for ${championName} has been deleted`);
-}
 
 function clearAllData() {
     // Create custom confirmation dialog to bypass browser blocking
@@ -719,7 +693,25 @@ function parseMatchFile(content, filename) {
         errors: []
     };
 
+    // Check if it's a CSV file and if first line looks like headers
+    const isCSV = filename.toLowerCase().endsWith('.csv');
+    let startIndex = 0;
+    
+    if (isCSV && lines.length > 0) {
+        const firstLine = lines[0].toLowerCase();
+        // Check if first line contains common CSV headers
+        if (firstLine.includes('champion') || firstLine.includes('name') || 
+            firstLine.includes('wins') || firstLine.includes('losses') ||
+            firstLine.includes('result') || firstLine.includes('match')) {
+            startIndex = 1; // Skip header row
+            results.errors.push('Skipped header row (line 1)');
+        }
+    }
+
     lines.forEach((line, index) => {
+        // Skip header row if detected
+        if (index < startIndex) return;
+        
         try {
             const championName = line.trim();
             const championData = findChampionByName(championName);
