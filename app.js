@@ -7,6 +7,120 @@ const matchHistory = document.getElementById('matchHistory');
 const fileInput = document.getElementById('fileInput');
 const fileUploadArea = document.getElementById('fileUploadArea');
 const importResults = document.getElementById('importResults');
+const recentChampionsGrid = document.getElementById('recentChampionsGrid');
+const uploadIconBtn = document.getElementById('uploadIconBtn');
+const importSection = document.getElementById('importSection');
+const appTitle = document.getElementById('appTitle');
+const backupInput = document.getElementById('backupInput');
+
+function createChampionImageElement(championId, championName, className = 'champion-icon') {
+    const img = document.createElement('img');
+    img.src = getChampionImageUrl(championId);
+    img.alt = championName;
+    img.className = className;
+    
+    img.onerror = function() {
+        this.style.display = 'none';
+        const placeholder = document.createElement('div');
+        placeholder.className = className + ' champion-placeholder';
+        placeholder.textContent = championName.charAt(0).toUpperCase();
+        placeholder.title = championName;
+        this.parentNode.insertBefore(placeholder, this);
+    };
+    
+    return img;
+}
+
+function getRecentVictories() {
+    const recentVictories = localStorage.getItem('arena_recent_victories');
+    return recentVictories ? JSON.parse(recentVictories) : [];
+}
+
+function addRecentVictory(championId, championName) {
+    let recentVictories = getRecentVictories();
+    
+    // Remove if already exists (to move to front)
+    recentVictories = recentVictories.filter(victory => victory.championId !== championId);
+    
+    // Add to front
+    recentVictories.unshift({
+        championId: championId,
+        championName: championName,
+        timestamp: new Date().toISOString()
+    });
+    
+    // Keep only last 10
+    recentVictories = recentVictories.slice(0, 10);
+    
+    localStorage.setItem('arena_recent_victories', JSON.stringify(recentVictories));
+    displayRecentVictories();
+}
+
+function displayRecentVictories() {
+    const recentVictories = getRecentVictories();
+    
+    if (recentVictories.length === 0) {
+        recentChampionsGrid.innerHTML = `
+            <div class="no-recent-victories">
+                <p>No recent victories yet. Start winning some arena matches!</p>
+            </div>
+        `;
+        return;
+    }
+    
+    const recentHTML = recentVictories.map(victory => {
+        const stats = getChampionStats(victory.championId);
+        return `
+            <div class="recent-champion-item" onclick="selectChampion('${victory.championId}', '${victory.championName}')" title="${victory.championName} - ${stats.wins}W ${stats.losses}L">
+                ${getChampionImageHTML(victory.championId, victory.championName, 'recent-champion-icon')}
+                <div class="recent-champion-info">
+                    <span class="recent-champion-name">${victory.championName}</span>
+                    <span class="recent-champion-stats">${stats.wins}W ${stats.losses}L</span>
+                </div>
+            </div>
+        `;
+    }).join('');
+    
+    recentChampionsGrid.innerHTML = recentHTML;
+}
+
+function collapseImportSection() {
+    importSection.classList.add('collapsed');
+}
+
+function expandImportSection() {
+    importSection.classList.remove('collapsed');
+}
+
+function resetToDefaultView() {
+    // Clear search
+    searchInput.value = '';
+    searchResults.style.display = 'none';
+    
+    // Hide champion info and match history
+    championInfo.style.display = 'none';
+    matchHistory.style.display = 'none';
+    
+    // Reset current champion
+    currentChampion = null;
+    
+    // Expand import section
+    expandImportSection();
+}
+
+function getChampionImageHTML(championId, championName, className = 'champion-icon') {
+    return `<img src="${getChampionImageUrl(championId)}" 
+                 alt="${championName}" 
+                 class="${className}"
+                 onerror="this.style.display='none'; 
+                         if(!this.nextElementSibling || !this.nextElementSibling.classList.contains('champion-placeholder')) {
+                             const placeholder = document.createElement('div');
+                             placeholder.className = '${className} champion-placeholder';
+                             placeholder.textContent = '${championName.charAt(0).toUpperCase()}';
+                             placeholder.title = '${championName}';
+                             this.parentNode.insertBefore(placeholder, this.nextSibling);
+                         }">`;
+}
 
 searchInput.addEventListener('input', handleSearch);
 searchInput.addEventListener('focus', () => {
@@ -14,6 +128,12 @@ searchInput.addEventListener('focus', () => {
         searchResults.style.display = 'block';
     }
 });
+
+uploadIconBtn.addEventListener('click', () => {
+    fileInput.click();
+});
+
+appTitle.addEventListener('click', resetToDefaultView);
 
 document.addEventListener('click', (e) => {
     if (!e.target.closest('.search-container')) {
@@ -27,14 +147,36 @@ function handleSearch() {
     if (query.length === 0) {
         searchResults.innerHTML = '';
         searchResults.style.display = 'none';
+        expandImportSection();
         return;
     }
 
-    const filteredChampions = champions.filter(champion => 
+    // Collapse import section when user starts searching
+    collapseImportSection();
+
+    // First, try to find exact alias match
+    const aliasMatch = findChampionByName(query);
+    
+    // Then filter for partial matches
+    const partialMatches = champions.filter(champion => 
         champion.name.toLowerCase().includes(query)
+    );
+    
+    // Combine results, prioritizing alias match
+    let filteredChampions = [];
+    
+    if (aliasMatch && !partialMatches.includes(aliasMatch)) {
+        filteredChampions.push(aliasMatch);
+    }
+    
+    filteredChampions = filteredChampions.concat(partialMatches);
+    
+    // Remove duplicates and limit to 8 results
+    const uniqueChampions = filteredChampions.filter((champion, index, self) => 
+        index === self.findIndex(c => c.id === champion.id)
     ).slice(0, 8);
 
-    displaySearchResults(filteredChampions);
+    displaySearchResults(uniqueChampions);
 }
 
 function displaySearchResults(champions) {
@@ -51,7 +193,7 @@ function displaySearchResults(champions) {
         
         return `
             <div class="search-result-item" onclick="selectChampion('${champion.id}', '${champion.name}')">
-                <img src="${getChampionImageUrl(champion.id)}" alt="${champion.name}" class="champion-icon">
+                ${getChampionImageHTML(champion.id, champion.name, 'champion-icon')}
                 <div class="champion-info-inline">
                     <span class="champion-name">${champion.name}</span>
                     ${hasMatches ? `
@@ -75,6 +217,9 @@ function selectChampion(championId, championName) {
     searchInput.value = championName;
     searchResults.style.display = 'none';
     
+    // Collapse import section when champion is selected
+    collapseImportSection();
+    
     displayChampionInfo();
     displayMatchHistory();
 }
@@ -84,8 +229,32 @@ function displayChampionInfo() {
 
     const stats = getChampionStats(currentChampion.id);
     
-    document.getElementById('championImage').src = getChampionImageUrl(currentChampion.id);
-    document.getElementById('championImage').alt = currentChampion.name;
+    const championImageElement = document.getElementById('championImage');
+    championImageElement.src = getChampionImageUrl(currentChampion.id);
+    championImageElement.alt = currentChampion.name;
+    
+    championImageElement.onerror = function() {
+        this.style.display = 'none';
+        let placeholder = this.nextElementSibling;
+        if (!placeholder || !placeholder.classList.contains('champion-placeholder')) {
+            placeholder = document.createElement('div');
+            placeholder.className = 'champion-portrait champion-placeholder';
+            placeholder.textContent = currentChampion.name.charAt(0).toUpperCase();
+            placeholder.title = currentChampion.name;
+            this.parentNode.insertBefore(placeholder, this.nextSibling);
+        } else {
+            placeholder.style.display = 'flex';
+        }
+    };
+    
+    championImageElement.onload = function() {
+        this.style.display = 'block';
+        const placeholder = this.nextElementSibling;
+        if (placeholder && placeholder.classList.contains('champion-placeholder')) {
+            placeholder.style.display = 'none';
+        }
+    };
+    
     document.getElementById('championName').textContent = currentChampion.name;
     document.getElementById('wins').textContent = stats.wins;
     document.getElementById('losses').textContent = stats.losses;
@@ -135,6 +304,12 @@ function recordMatch(result) {
     if (!currentChampion) return;
     
     saveMatch(currentChampion.id, result);
+    
+    // Track recent victories
+    if (result === 'win') {
+        addRecentVictory(currentChampion.id, currentChampion.name);
+    }
+    
     displayChampionInfo();
     displayMatchHistory();
     
@@ -201,6 +376,170 @@ document.addEventListener('keydown', (e) => {
     }
 });
 
+// Initialize recent victories on page load
+document.addEventListener('DOMContentLoaded', () => {
+    displayRecentVictories();
+});
+
+function downloadFile(content, filename, contentType) {
+    const blob = new Blob([content], { type: contentType });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+}
+
+function exportToCSV() {
+    const championsWithData = [];
+    
+    // Collect all champions with match data
+    champions.forEach(champion => {
+        const matches = getMatches(champion.id);
+        if (matches.length > 0) {
+            const stats = getChampionStats(champion.id);
+            championsWithData.push({
+                championName: champion.name,
+                wins: stats.wins,
+                losses: stats.losses,
+                winRate: calculateWinRate(stats.wins, stats.losses),
+                totalMatches: matches.length,
+                lastPlayed: matches[0]?.date || 'N/A'
+            });
+        }
+    });
+    
+    if (championsWithData.length === 0) {
+        showNotification('No match data to export!');
+        return;
+    }
+    
+    // Sort by win rate (descending)
+    championsWithData.sort((a, b) => {
+        const aRate = parseInt(a.winRate);
+        const bRate = parseInt(b.winRate);
+        return bRate - aRate;
+    });
+    
+    // Create CSV content
+    const headers = ['Champion', 'Wins', 'Losses', 'Win Rate', 'Total Matches', 'Last Played'];
+    const csvContent = [
+        headers.join(','),
+        ...championsWithData.map(champ => [
+            champ.championName,
+            champ.wins,
+            champ.losses,
+            champ.winRate,
+            champ.totalMatches,
+            champ.lastPlayed
+        ].join(','))
+    ].join('\n');
+    
+    const timestamp = new Date().toISOString().split('T')[0];
+    const filename = `arena-tracker-stats-${timestamp}.csv`;
+    
+    downloadFile(csvContent, filename, 'text/csv');
+    showNotification(`Exported ${championsWithData.length} champions to ${filename}`);
+}
+
+function exportToJSON() {
+    const allData = {
+        version: '1.0',
+        exportDate: new Date().toISOString(),
+        champions: {},
+        recentVictories: getRecentVictories()
+    };
+    
+    // Collect all match data
+    let totalMatches = 0;
+    champions.forEach(champion => {
+        const matches = getMatches(champion.id);
+        if (matches.length > 0) {
+            allData.champions[champion.id] = {
+                name: champion.name,
+                matches: matches
+            };
+            totalMatches += matches.length;
+        }
+    });
+    
+    if (totalMatches === 0) {
+        showNotification('No match data to export!');
+        return;
+    }
+    
+    const jsonContent = JSON.stringify(allData, null, 2);
+    const timestamp = new Date().toISOString().split('T')[0];
+    const filename = `arena-tracker-backup-${timestamp}.json`;
+    
+    downloadFile(jsonContent, filename, 'application/json');
+    showNotification(`Exported complete backup with ${totalMatches} matches to ${filename}`);
+}
+
+function importFromJSON(file) {
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        try {
+            const data = JSON.parse(e.target.result);
+            
+            if (!data.version || !data.champions) {
+                throw new Error('Invalid backup file format');
+            }
+            
+            let importedMatches = 0;
+            let importedChampions = 0;
+            
+            // Import champion matches
+            Object.keys(data.champions).forEach(championId => {
+                const championData = data.champions[championId];
+                if (championData.matches && championData.matches.length > 0) {
+                    // Merge with existing data
+                    const existingMatches = getMatches(championId);
+                    const existingIds = new Set(existingMatches.map(m => m.id));
+                    
+                    // Add new matches (avoid duplicates)
+                    const newMatches = championData.matches.filter(m => !existingIds.has(m.id));
+                    const mergedMatches = [...existingMatches, ...newMatches]
+                        .sort((a, b) => b.id - a.id) // Sort by newest first
+                        .slice(0, 50); // Keep only last 50
+                    
+                    localStorage.setItem(`arena_matches_${championId}`, JSON.stringify(mergedMatches));
+                    importedMatches += newMatches.length;
+                    if (newMatches.length > 0) importedChampions++;
+                }
+            });
+            
+            // Import recent victories (merge and deduplicate)
+            if (data.recentVictories) {
+                const existingRecent = getRecentVictories();
+                const existingIds = new Set(existingRecent.map(v => v.championId));
+                
+                const newRecent = data.recentVictories.filter(v => !existingIds.has(v.championId));
+                const mergedRecent = [...existingRecent, ...newRecent].slice(0, 10);
+                
+                localStorage.setItem('arena_recent_victories', JSON.stringify(mergedRecent));
+            }
+            
+            // Refresh displays
+            displayRecentVictories();
+            if (currentChampion) {
+                displayChampionInfo();
+                displayMatchHistory();
+            }
+            
+            showNotification(`Successfully imported ${importedMatches} matches for ${importedChampions} champions!`);
+            
+        } catch (error) {
+            showNotification('Error importing backup file: ' + error.message);
+        }
+    };
+    
+    reader.readAsText(file);
+}
+
 fileUploadArea.addEventListener('click', () => {
     fileInput.click();
 });
@@ -226,6 +565,13 @@ fileUploadArea.addEventListener('drop', (e) => {
 fileInput.addEventListener('change', (e) => {
     if (e.target.files.length > 0) {
         handleFileUpload(e.target.files[0]);
+    }
+});
+
+backupInput.addEventListener('change', (e) => {
+    if (e.target.files.length > 0) {
+        importFromJSON(e.target.files[0]);
+        e.target.value = ''; // Clear input for next use
     }
 });
 
@@ -262,6 +608,7 @@ function parseMatchFile(content, filename) {
             
             if (championData) {
                 saveMatch(championData.id, 'win');
+                addRecentVictory(championData.id, championData.name);
                 results.imported++;
             } else {
                 results.errors.push(`Line ${index + 1}: Champion "${championName}" not found`);

@@ -9,19 +9,24 @@
 <body>
     <div class="container">
         <header>
-            <h1>LoL Arena Match Tracker</h1>
+            <h1 id="appTitle" class="clickable-title">LoL Arena Match Tracker</h1>
             <p>Track your wins and losses with different champions in Arena mode</p>
         </header>
 
         <main>
             <section class="search-section">
                 <div class="search-container">
-                    <input type="text" id="championSearch" placeholder="Search for a champion..." autocomplete="off">
+                    <div class="search-input-wrapper">
+                        <input type="text" id="championSearch" placeholder="Search for a champion..." autocomplete="off">
+                        <button class="upload-icon-btn" id="uploadIconBtn" title="Upload champion list">
+                            📁
+                        </button>
+                    </div>
                     <div class="search-results" id="searchResults"></div>
                 </div>
             </section>
 
-            <section class="import-section">
+            <section class="import-section" id="importSection">
                 <div class="import-container">
                     <h3>Import Match Data</h3>
                     <p>Upload a text file with your match history to bulk import victories and losses</p>
@@ -34,18 +39,52 @@
                         </div>
                     </div>
                     <div class="import-results" id="importResults" style="display: none;"></div>
+                    <div class="export-import-actions">
+                        <h4>Backup & Restore</h4>
+                        <div class="action-buttons">
+                            <button class="btn btn-export-csv" onclick="exportToCSV()">
+                                📊 Export Stats (CSV)
+                            </button>
+                            <button class="btn btn-export-json" onclick="exportToJSON()">
+                                💾 Backup Data (JSON)
+                            </button>
+                            <div class="import-backup-wrapper">
+                                <input type="file" id="backupInput" accept=".json" style="display: none;">
+                                <button class="btn btn-import-json" onclick="document.getElementById('backupInput').click()">
+                                    📥 Restore Backup
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
                     <div class="format-help">
                         <details>
                             <summary>File Format Help</summary>
                             <div class="format-examples">
-                                <h4>File Format:</h4>
+                                <h4>Import Victories:</h4>
                                 <p>Simply list one champion name per line. Each champion listed will be recorded as a <strong>victory</strong>.</p>
                                 <p><strong>Example:</strong></p>
                                 <code>Ahri<br>Yasuo<br>Jinx<br>Zed<br>Akali</code>
                                 <p><em>This will record 5 wins - one for each champion.</em></p>
                                 <p><strong>Supported champion names:</strong> Full names (e.g., "Aurelion Sol"), common nicknames (e.g., "ASol", "GP", "MF"), and partial matches.</p>
+                                
+                                <h4>Export Options:</h4>
+                                <p><strong>CSV Export:</strong> Spreadsheet-friendly format with champion stats for analysis</p>
+                                <p><strong>JSON Backup:</strong> Complete data backup that can be restored later</p>
                             </div>
                         </details>
+                    </div>
+                </div>
+            </section>
+
+            <section class="recent-victories" id="recentVictories">
+                <div class="recent-victories-container">
+                    <h3>Recent Victories</h3>
+                    <p>Your last 10 champions with wins</p>
+                    <div class="recent-champions-grid" id="recentChampionsGrid">
+                        <div class="no-recent-victories">
+                            <p>No recent victories yet. Start winning some arena matches!</p>
+                        </div>
                     </div>
                 </div>
             </section>
