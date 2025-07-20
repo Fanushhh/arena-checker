@@ -30,6 +30,12 @@ A modern web application for tracking your wins and losses with different champi
 - **Clickable**: Select any recent champion for detailed view
 - **Auto-Updates**: Refreshes when recording new wins
 
+### 💾 **Backup & Export System**
+- **CSV Export**: Download spreadsheet with champion statistics
+- **JSON Backup**: Complete data backup for restoration
+- **Smart Import**: Merge backups without creating duplicates
+- **Data Safety**: Protect against browser data loss
+
 ### 🎨 **Modern Gaming UI**
 - **Responsive Design**: Works perfectly on desktop and mobile
 - **Smart Layout**: Upload section collapses during search for focus
@@ -58,6 +64,11 @@ A modern web application for tracking your wins and losses with different champi
    Create a text file with champion names → Upload via 📁 icon
    ```
 
+5. **Backup Your Data** (Recommended)
+   ```
+   Click "💾 Backup Data (JSON)" → Save file safely
+   ```
+
 ## 📖 How to Use
 
 ### Basic Usage
@@ -79,6 +90,32 @@ MF
 ```
 
 Then upload via the 📁 icon or main upload area. Each champion listed will be recorded as one victory.
+
+### Backup & Export
+
+#### Export Your Stats (CSV)
+- Click **"📊 Export Stats (CSV)"** to download a spreadsheet
+- Opens in Excel, Google Sheets, or any CSV viewer
+- Contains: Champion, Wins, Losses, Win Rate, Total Matches, Last Played
+- Sorted by win rate (best performers first)
+
+#### Backup Your Data (JSON)
+- Click **"💾 Backup Data (JSON)"** for complete data backup
+- Includes all matches, timestamps, and recent victories
+- Use this before clearing browser data or switching devices
+
+#### Restore From Backup
+- Click **"📥 Restore Backup"** to import a JSON backup
+- Automatically merges with existing data (no duplicates)
+- Perfect for recovering data after browser cleanup
+
+**Example CSV Output:**
+```csv
+Champion,Wins,Losses,Win Rate,Total Matches,Last Played
+Ahri,8,2,80%,10,1/20/2024
+Jinx,6,3,67%,9,1/19/2024
+Yasuo,4,6,40%,10,1/18/2024
+```
 
 ### Supported Champion Names
 
@@ -156,7 +193,8 @@ arena_recent_victories: [
 - All match data stored locally in browser
 - No external servers or accounts required
 - Data survives browser restarts
-- Easy to backup via export functionality
+- **Export/import system protects against data loss**
+- JSON backups ensure complete data portability
 
 ## 🔧 Customization
 
@@ -207,6 +245,18 @@ The CSS uses CSS custom properties for easy theming:
 - Use plain text (.txt) or CSV (.csv) files
 - Check file encoding (UTF-8 recommended)
 
+### Data Loss Prevention
+- **Regular Backups**: Export JSON backup weekly
+- **Before Browser Cleanup**: Always backup before clearing cookies/data
+- **Device Migration**: Export on old device, import on new device
+- **Backup Storage**: Save JSON files to cloud storage or external drive
+
+### Backup/Restore Issues
+- **CSV Won't Open**: Ensure you have Excel, Google Sheets, or text editor
+- **JSON Import Fails**: Check file is valid JSON backup from this app
+- **Missing Data After Import**: Backup may have been partial or corrupted
+- **Duplicate Data**: App prevents duplicates automatically during import
+
 ## 🤝 Contributing
 
 ### Development Setup
@@ -220,8 +270,11 @@ Ideas for future enhancements:
 - Statistics dashboard with charts
 - Win streak tracking
 - Champion performance analytics
-- Export functionality for match data
+- ~~Export functionality for match data~~ ✅ **Completed**
 - Dark/light theme toggle
+- Cloud sync options
+- Advanced filtering and sorting
+- Performance trend analysis
 
 ## 📄 License
 
