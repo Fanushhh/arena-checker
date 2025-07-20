@@ -540,6 +540,124 @@ function importFromJSON(file) {
     reader.readAsText(file);
 }
 
+function clearChampionData(championId, championName) {
+    if (!confirm(`Are you sure you want to delete ALL match data for ${championName}?\n\nThis action cannot be undone!`)) {
+        return;
+    }
+    
+    // Remove champion matches
+    localStorage.removeItem(`arena_matches_${championId}`);
+    
+    // Remove from recent victories
+    const recentVictories = getRecentVictories();
+    const updatedRecent = recentVictories.filter(victory => victory.championId !== championId);
+    localStorage.setItem('arena_recent_victories', JSON.stringify(updatedRecent));
+    
+    // Refresh displays
+    displayRecentVictories();
+    
+    // If this was the current champion, hide the info
+    if (currentChampion && currentChampion.id === championId) {
+        championInfo.style.display = 'none';
+        matchHistory.style.display = 'none';
+        currentChampion = null;
+        searchInput.value = '';
+    }
+    
+    showNotification(`All data for ${championName} has been deleted`);
+}
+
+function clearAllData() {
+    // Create custom confirmation dialog to bypass browser blocking
+    const overlay = document.createElement('div');
+    overlay.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.7);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 10000;
+        font-family: 'Inter', sans-serif;
+    `;
+    
+    const dialog = document.createElement('div');
+    dialog.style.cssText = `
+        background: #1e293b;
+        border: 1px solid #334155;
+        border-radius: 0.75rem;
+        padding: 2rem;
+        max-width: 400px;
+        text-align: center;
+        color: #e2e8f0;
+    `;
+    
+    dialog.innerHTML = `
+        <h3 style="margin: 0 0 1rem 0; color: #ef4444;">⚠️ Delete All Data</h3>
+        <p style="margin: 0 0 2rem 0; line-height: 1.5;">Delete all arena data? This cannot be undone.</p>
+        <div style="display: flex; gap: 1rem; justify-content: center;">
+            <button id="cancelBtn" style="
+                padding: 0.75rem 1.5rem;
+                border: 2px solid #64748b;
+                border-radius: 0.5rem;
+                background: transparent;
+                color: #64748b;
+                font-family: 'Inter', sans-serif;
+                font-weight: 600;
+                cursor: pointer;
+            ">Cancel</button>
+            <button id="confirmBtn" style="
+                padding: 0.75rem 1.5rem;
+                border: 2px solid #ef4444;
+                border-radius: 0.5rem;
+                background: #ef4444;
+                color: white;
+                font-family: 'Inter', sans-serif;
+                font-weight: 600;
+                cursor: pointer;
+            ">Delete All</button>
+        </div>
+    `;
+    
+    overlay.appendChild(dialog);
+    document.body.appendChild(overlay);
+    
+    // Handle button clicks
+    dialog.querySelector('#cancelBtn').onclick = () => {
+        document.body.removeChild(overlay);
+    };
+    
+    dialog.querySelector('#confirmBtn').onclick = () => {
+        // Clear all arena-related localStorage
+        const keys = Object.keys(localStorage);
+        keys.forEach(key => {
+            if (key.startsWith('arena_')) {
+                localStorage.removeItem(key);
+            }
+        });
+        
+        // Reset UI
+        resetToDefaultView();
+        displayRecentVictories();
+        showNotification('All arena data deleted');
+        
+        // Close dialog
+        document.body.removeChild(overlay);
+    };
+    
+    // Close on overlay click
+    overlay.onclick = (e) => {
+        if (e.target === overlay) {
+            document.body.removeChild(overlay);
+        }
+    };
+}
+
+
+
 fileUploadArea.addEventListener('click', () => {
     fileInput.click();
 });

@@ -42,20 +42,22 @@
                     <div class="export-import-actions">
                         <h4>Backup & Restore</h4>
                         <div class="action-buttons">
-                            <button class="btn btn-export-csv" onclick="exportToCSV()">
-                                📊 Export Stats (CSV)
+                            <button class="btn btn-export-csv" onclick="exportToCSV()" title="Export Stats (CSV)">
+                                📊
                             </button>
-                            <button class="btn btn-export-json" onclick="exportToJSON()">
-                                💾 Backup Data (JSON)
+                            <button class="btn btn-export-json" onclick="exportToJSON()" title="Backup Data (JSON)">
+                                💾
                             </button>
-                            <div class="import-backup-wrapper">
-                                <input type="file" id="backupInput" accept=".json" style="display: none;">
-                                <button class="btn btn-import-json" onclick="document.getElementById('backupInput').click()">
-                                    📥 Restore Backup
-                                </button>
-                            </div>
+                            <button class="btn btn-import-json" onclick="document.getElementById('backupInput').click()" title="Restore Backup">
+                                📥
+                            </button>
+                            <button class="btn btn-clear-data" onclick="clearAllData()" title="Delete all arena data">
+                                🗑️
+                            </button>
                         </div>
+                        <input type="file" id="backupInput" accept=".json" style="display: none;">
                     </div>
+
 
                     <div class="format-help">
                         <details>
@@ -111,6 +113,11 @@
                         <div class="actions">
                             <button class="btn btn-win" onclick="recordMatch('win')">Record Win</button>
                             <button class="btn btn-loss" onclick="recordMatch('loss')">Record Loss</button>
+                        </div>
+                        <div class="champion-management">
+                            <button class="btn btn-clear-champion" onclick="clearChampionData(currentChampion.id, currentChampion.name)">
+                                🗑️ Clear All Data
+                            </button>
                         </div>
                     </div>
                 </div>
