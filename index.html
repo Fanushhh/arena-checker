@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>League of Legends Arena Checker</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>LoL Arena Match Tracker</h1>
+            <p>Track your wins and losses with different champions in Arena mode</p>
+        </header>
+
+        <main>
+            <section class="search-section">
+                <div class="search-container">
+                    <input type="text" id="championSearch" placeholder="Search for a champion..." autocomplete="off">
+                    <div class="search-results" id="searchResults"></div>
+                </div>
+            </section>
+
+            <section class="import-section">
+                <div class="import-container">
+                    <h3>Import Match Data</h3>
+                    <p>Upload a text file with your match history to bulk import victories and losses</p>
+                    <div class="file-upload-area" id="fileUploadArea">
+                        <input type="file" id="fileInput" accept=".txt,.csv" style="display: none;">
+                        <div class="upload-content">
+                            <div class="upload-icon">📁</div>
+                            <p>Click to select file or drag and drop</p>
+                            <p class="upload-hint">Supports .txt and .csv files</p>
+                        </div>
+                    </div>
+                    <div class="import-results" id="importResults" style="display: none;"></div>
+                    <div class="format-help">
+                        <details>
+                            <summary>File Format Help</summary>
+                            <div class="format-examples">
+                                <h4>File Format:</h4>
+                                <p>Simply list one champion name per line. Each champion listed will be recorded as a <strong>victory</strong>.</p>
+                                <p><strong>Example:</strong></p>
+                                <code>Ahri<br>Yasuo<br>Jinx<br>Zed<br>Akali</code>
+                                <p><em>This will record 5 wins - one for each champion.</em></p>
+                                <p><strong>Supported champion names:</strong> Full names (e.g., "Aurelion Sol"), common nicknames (e.g., "ASol", "GP", "MF"), and partial matches.</p>
+                            </div>
+                        </details>
+                    </div>
+                </div>
+            </section>
+
+            <section class="champion-info" id="championInfo" style="display: none;">
+                <div class="champion-card">
+                    <img id="championImage" src="" alt="" class="champion-portrait">
+                    <div class="champion-details">
+                        <h2 id="championName"></h2>
+                        <div class="stats">
+                            <div class="stat">
+                                <span class="stat-label">Wins:</span>
+                                <span class="stat-value" id="wins">0</span>
+                            </div>
+                            <div class="stat">
+                                <span class="stat-label">Losses:</span>
+                                <span class="stat-value" id="losses">0</span>
+                            </div>
+                            <div class="stat">
+                                <span class="stat-label">Win Rate:</span>
+                                <span class="stat-value" id="winRate">0%</span>
+                            </div>
+                        </div>
+                        <div class="actions">
+                            <button class="btn btn-win" onclick="recordMatch('win')">Record Win</button>
+                            <button class="btn btn-loss" onclick="recordMatch('loss')">Record Loss</button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="match-history" id="matchHistory" style="display: none;">
+                <h3>Recent Matches</h3>
+                <div class="matches-list" id="matchesList"></div>
+            </section>
+        </main>
+    </div>
+
+    <script src="champions.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
