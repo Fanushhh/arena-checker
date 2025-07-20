@@ -44,12 +44,27 @@ function displaySearchResults(champions) {
         return;
     }
 
-    const resultsHTML = champions.map(champion => `
-        <div class="search-result-item" onclick="selectChampion('${champion.id}', '${champion.name}')">
-            <img src="${getChampionImageUrl(champion.id)}" alt="${champion.name}" class="champion-icon">
-            <span class="champion-name">${champion.name}</span>
-        </div>
-    `).join('');
+    const resultsHTML = champions.map(champion => {
+        const stats = getChampionStats(champion.id);
+        const hasMatches = stats.wins > 0 || stats.losses > 0;
+        const winRate = hasMatches ? calculateWinRate(stats.wins, stats.losses) : null;
+        
+        return `
+            <div class="search-result-item" onclick="selectChampion('${champion.id}', '${champion.name}')">
+                <img src="${getChampionImageUrl(champion.id)}" alt="${champion.name}" class="champion-icon">
+                <div class="champion-info-inline">
+                    <span class="champion-name">${champion.name}</span>
+                    ${hasMatches ? `
+                        <div class="champion-stats-inline">
+                            <span class="wins-inline">${stats.wins}W</span>
+                            <span class="losses-inline">${stats.losses}L</span>
+                            <span class="winrate-inline">${winRate}</span>
+                        </div>
+                    ` : '<span class="no-matches-inline">No matches yet</span>'}
+                </div>
+            </div>
+        `;
+    }).join('');
 
     searchResults.innerHTML = resultsHTML;
     searchResults.style.display = 'block';

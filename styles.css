@@ -125,8 +125,44 @@ header p {
     border-color: #3b82f6;
 }
 
+.champion-info-inline {
+    flex: 1;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
 .champion-name {
     font-weight: 500;
+}
+
+.champion-stats-inline {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+    font-size: 0.875rem;
+}
+
+.wins-inline {
+    color: #10b981;
+    font-weight: 600;
+}
+
+.losses-inline {
+    color: #ef4444;
+    font-weight: 600;
+}
+
+.winrate-inline {
+    color: #3b82f6;
+    font-weight: 600;
+    font-size: 0.8rem;
+}
+
+.no-matches-inline {
+    color: #64748b;
+    font-size: 0.875rem;
+    font-style: italic;
 }
 
 .no-results {
