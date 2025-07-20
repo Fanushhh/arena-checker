@@ -810,7 +810,11 @@ function findChampionByName(name) {
         'velkoz': 'velkoz',
         'vel koz': 'velkoz',
         'wukong': 'wukong',
-        'monkey king': 'wukong'
+        'monkey king': 'wukong',
+        'naaf': 'naafiri',
+        'naafy': 'naafiri',
+        'briar': 'briar',
+        'bri': 'briar'
     };
     
     const aliasMatch = aliasMatches[normalizedName];

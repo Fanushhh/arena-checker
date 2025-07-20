@@ -10,8 +10,10 @@ const champions = [
     { name: "Aphelios", id: "aphelios" },
     { name: "Ashe", id: "ashe" },
     { name: "Aurelion Sol", id: "aurelionsol" },
+    { name: "Aurora", id: "aurora" },
     { name: "Azir", id: "azir" },
     { name: "Bard", id: "bard" },
+    { name: "Briar", id: "briar" },
     { name: "Bel'Veth", id: "belveth" },
     { name: "Blitzcrank", id: "blitzcrank" },
     { name: "Brand", id: "brand" },
@@ -41,6 +43,7 @@ const champions = [
     { name: "Gwen", id: "gwen" },
     { name: "Hecarim", id: "hecarim" },
     { name: "Heimerdinger", id: "heimerdinger" },
+    { name: "Hwei", id: "hwei" },
     { name: "Illaoi", id: "illaoi" },
     { name: "Irelia", id: "irelia" },
     { name: "Ivern", id: "ivern" },
@@ -80,6 +83,7 @@ const champions = [
     { name: "Miss Fortune", id: "missfortune" },
     { name: "Mordekaiser", id: "mordekaiser" },
     { name: "Morgana", id: "morgana" },
+    { name: "Naafiri", id: "naafiri" },
     { name: "Nami", id: "nami" },
     { name: "Nasus", id: "nasus" },
     { name: "Nautilus", id: "nautilus" },
@@ -108,6 +112,7 @@ const champions = [
     { name: "Ryze", id: "ryze" },
     { name: "Samira", id: "samira" },
     { name: "Sejuani", id: "sejuani" },
+    { name: "Smolder", id: "smolder" },
     { name: "Senna", id: "senna" },
     { name: "Seraphine", id: "seraphine" },
     { name: "Sett", id: "sett" },
@@ -165,5 +170,5 @@ const champions = [
 ];
 
 function getChampionImageUrl(championId) {
-    return `https://ddragon.leagueoflegends.com/cdn/14.1.1/img/champion/${championId.charAt(0).toUpperCase() + championId.slice(1)}.png`;
+    return `https://ddragon.leagueoflegends.com/cdn/14.23.1/img/champion/${championId.charAt(0).toUpperCase() + championId.slice(1)}.png`;
 }
