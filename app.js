@@ -70,8 +70,9 @@ function displayRecentVictories() {
     
     const recentHTML = recentVictories.map(victory => {
         const stats = getChampionStats(victory.championId);
+        const escapedName = victory.championName.replace(/'/g, "\\'");
         return `
-            <div class="recent-champion-item" onclick="selectChampion('${victory.championId}', '${victory.championName}')" title="${victory.championName} - ${stats.wins}W ${stats.losses}L">
+            <div class="recent-champion-item" onclick="selectChampion('${victory.championId}', '${escapedName}')" title="${victory.championName} - ${stats.wins}W ${stats.losses}L">
                 ${getChampionImageHTML(victory.championId, victory.championName, 'recent-champion-icon')}
                 <div class="recent-champion-info">
                     <span class="recent-champion-name">${victory.championName}</span>
@@ -190,9 +191,10 @@ function displaySearchResults(champions) {
         const stats = getChampionStats(champion.id);
         const hasMatches = stats.wins > 0 || stats.losses > 0;
         const winRate = hasMatches ? calculateWinRate(stats.wins, stats.losses) : null;
+        const escapedName = champion.name.replace(/'/g, "\\'");
         
         return `
-            <div class="search-result-item" onclick="selectChampion('${champion.id}', '${champion.name}')">
+            <div class="search-result-item" onclick="selectChampion('${champion.id}', '${escapedName}')">
                 ${getChampionImageHTML(champion.id, champion.name, 'champion-icon')}
                 <div class="champion-info-inline">
                     <span class="champion-name">${champion.name}</span>
@@ -219,6 +221,24 @@ function selectChampion(championId, championName) {
     
     // Collapse import section when champion is selected
     collapseImportSection();
+    
+    // If showing no wins list, collapse it and return to recent victories
+    if (showingNoWins) {
+        showingNoWins = false;
+        noWinsDisplayCount = 20; // Reset display count
+        const btn = document.getElementById('showNoWinsBtn');
+        const container = document.querySelector('.recent-victories-container');
+        
+        btn.classList.remove('active');
+        btn.innerHTML = '🔍 No Wins';
+        btn.title = 'Show champions you haven\'t won with';
+        
+        // Restore section header
+        container.querySelector('h3').textContent = 'Recent Victories';
+        container.querySelector('p').textContent = 'Your last 10 champions with wins';
+        
+        displayRecentVictories();
+    }
     
     displayChampionInfo();
     displayMatchHistory();
@@ -380,6 +400,165 @@ document.addEventListener('keydown', (e) => {
 document.addEventListener('DOMContentLoaded', () => {
     displayRecentVictories();
 });
+
+let showingNoWins = false;
+let noWinsDisplayCount = 20;
+
+function toggleNoWinsView() {
+    const btn = document.getElementById('showNoWinsBtn');
+    const container = document.querySelector('.recent-victories-container');
+    const grid = document.getElementById('recentChampionsGrid');
+    
+    if (!showingNoWins) {
+        // Switching to no wins view
+        showingNoWins = true;
+        noWinsDisplayCount = 20;
+        
+        btn.classList.add('active');
+        btn.innerHTML = '↩️ Back';
+        btn.title = 'Back to recent victories';
+        
+        // Update section header
+        container.querySelector('h3').textContent = 'Champions Without Wins';
+        container.querySelector('p').textContent = 'Loading...';
+        
+        // Add fade out animation
+        grid.style.opacity = '0';
+        grid.style.transform = 'translateY(-10px)';
+        
+        setTimeout(() => {
+            displayChampionsWithoutWins();
+            // Fade in new content
+            grid.style.opacity = '1';
+            grid.style.transform = 'translateY(0)';
+        }, 200);
+    } else {
+        // Switching back to recent victories
+        showingNoWins = false;
+        noWinsDisplayCount = 20;
+        
+        btn.classList.remove('active');
+        btn.innerHTML = '🔍 No Wins';
+        btn.title = 'Show champions you haven\'t won with';
+        
+        // Restore section header
+        container.querySelector('h3').textContent = 'Recent Victories';
+        container.querySelector('p').textContent = 'Your last 10 champions with wins';
+        
+        // Add fade out animation
+        grid.style.opacity = '0';
+        grid.style.transform = 'translateY(-10px)';
+        
+        setTimeout(() => {
+            displayRecentVictories();
+            // Fade in new content
+            grid.style.opacity = '1';
+            grid.style.transform = 'translateY(0)';
+        }, 200);
+    }
+}
+
+function hideLastNoWins() {
+    // Reduce display count by 20 (but keep minimum of 20)
+    noWinsDisplayCount = Math.max(20, noWinsDisplayCount - 20);
+    
+    const grid = document.getElementById('recentChampionsGrid');
+    
+    // Add fade out animation
+    grid.style.opacity = '0.7';
+    grid.style.transform = 'translateY(-5px)';
+    
+    setTimeout(() => {
+        displayChampionsWithoutWins();
+        // Fade in updated content
+        grid.style.opacity = '1';
+        grid.style.transform = 'translateY(0)';
+    }, 150);
+}
+
+function showMoreNoWins() {
+    noWinsDisplayCount += 20;
+    displayChampionsWithoutWins();
+}
+
+function displayChampionsWithoutWins() {
+    const championsWithoutWins = [];
+    
+    // Check each champion for wins
+    champions.forEach(champion => {
+        const stats = getChampionStats(champion.id);
+        if (stats.wins === 0) {
+            championsWithoutWins.push(champion);
+        }
+    });
+    
+    const container = document.querySelector('.recent-victories-container');
+    
+    if (championsWithoutWins.length === 0) {
+        container.querySelector('p').textContent = 'You have at least one win with every champion!';
+        recentChampionsGrid.innerHTML = `
+            <div class="no-recent-victories">
+                <p>🎉 Amazing! You have at least one win with every champion!</p>
+            </div>
+        `;
+        return;
+    }
+    
+    // Sort alphabetically for easier browsing
+    championsWithoutWins.sort((a, b) => a.name.localeCompare(b.name));
+    
+    // Determine how many to show based on current display count
+    const totalCount = championsWithoutWins.length;
+    const championsToShow = championsWithoutWins.slice(0, noWinsDisplayCount);
+    const showingCount = championsToShow.length;
+    
+    // Update description with count
+    container.querySelector('p').textContent = `Showing ${showingCount} of ${totalCount} champions you haven't won with yet`;
+    
+    const noWinsHTML = championsToShow.map(champion => {
+        const stats = getChampionStats(champion.id);
+        const escapedName = champion.name.replace(/'/g, "\\'");
+        return `
+            <div class="recent-champion-item no-wins-item" onclick="selectChampion('${champion.id}', '${escapedName}')" title="${champion.name} - No wins yet">
+                ${getChampionImageHTML(champion.id, champion.name, 'recent-champion-icon')}
+                <div class="recent-champion-info">
+                    <span class="recent-champion-name">${champion.name}</span>
+                    <span class="recent-champion-stats no-wins-stats">${stats.losses > 0 ? `${stats.losses}L` : 'No matches'}</span>
+                </div>
+            </div>
+        `;
+    }).join('');
+    
+    // Add action buttons
+    let buttonHTML = '';
+    
+    // Show More button if there are more champions to display
+    if (showingCount < totalCount) {
+        const remaining = totalCount - showingCount;
+        const nextBatch = Math.min(20, remaining);
+        buttonHTML += `
+            <div class="view-more-container">
+                <button class="btn-view-more" onclick="showMoreNoWins()">
+                    📋 Show ${nextBatch} More Champions
+                </button>
+            </div>
+        `;
+    }
+    
+    // Hide last 20 button (only show if we're displaying more than 20)
+    if (noWinsDisplayCount > 20) {
+        buttonHTML += `
+            <div class="view-more-container">
+                <button class="btn-hide-list" onclick="hideLastNoWins()">
+                    🙈 Hide Last 20
+                </button>
+            </div>
+        `;
+    }
+    
+    recentChampionsGrid.innerHTML = noWinsHTML + buttonHTML;
+}
+
 
 function downloadFile(content, filename, contentType) {
     const blob = new Blob([content], { type: contentType });

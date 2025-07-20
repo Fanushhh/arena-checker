@@ -81,8 +81,15 @@
 
             <section class="recent-victories" id="recentVictories">
                 <div class="recent-victories-container">
-                    <h3>Recent Victories</h3>
-                    <p>Your last 10 champions with wins</p>
+                    <div class="section-header">
+                        <div>
+                            <h3>Recent Victories</h3>
+                            <p>Your last 10 champions with wins</p>
+                        </div>
+                        <button class="btn-show-no-wins" onclick="toggleNoWinsView()" id="showNoWinsBtn" title="Show champions you haven't won with">
+                            🔍 No Wins
+                        </button>
+                    </div>
                     <div class="recent-champions-grid" id="recentChampionsGrid">
                         <div class="no-recent-victories">
                             <p>No recent victories yet. Start winning some arena matches!</p>
