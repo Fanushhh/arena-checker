@@ -57,7 +57,19 @@ function addRecentVictory(championId, championName) {
 }
 
 function displayRecentVictories() {
-    const recentVictories = getRecentVictories();
+    let recentVictories = getRecentVictories();
+    
+    // Filter out champions with 0 wins and update localStorage
+    const validVictories = recentVictories.filter(victory => {
+        const stats = getChampionStats(victory.championId);
+        return stats.wins > 0;
+    });
+    
+    // Update localStorage if we filtered out any champions
+    if (validVictories.length !== recentVictories.length) {
+        localStorage.setItem('arena_recent_victories', JSON.stringify(validVictories));
+        recentVictories = validVictories;
+    }
     
     if (recentVictories.length === 0) {
         recentChampionsGrid.innerHTML = `
@@ -333,6 +345,11 @@ function recordMatch(result) {
     displayChampionInfo();
     displayMatchHistory();
     
+    // If we're showing no wins view and this was a win, refresh the list
+    if (showingNoWins && result === 'win') {
+        displayChampionsWithoutWins();
+    }
+    
     showNotification(`${result === 'win' ? 'Win' : 'Loss'} recorded for ${currentChampion.name}!`);
 }
 
@@ -361,12 +378,22 @@ function displayMatchHistory() {
 
 function deleteMatch(championId, matchId) {
     const matches = getMatches(championId);
+    const matchToDelete = matches.find(match => match.id === matchId);
     const updatedMatches = matches.filter(match => match.id !== matchId);
     
     localStorage.setItem(`arena_matches_${championId}`, JSON.stringify(updatedMatches));
     
+    // Always refresh recent victories when deleting any match (win or loss)
+    // The displayRecentVictories function will automatically filter out champions with 0 wins
+    displayRecentVictories();
+    
     displayChampionInfo();
     displayMatchHistory();
+    
+    // If we're showing no wins view, refresh it (in case champion now has no wins)
+    if (showingNoWins) {
+        displayChampionsWithoutWins();
+    }
     
     showNotification('Match deleted!');
 }
@@ -427,6 +454,8 @@ function toggleNoWinsView() {
         grid.style.transform = 'translateY(-10px)';
         
         setTimeout(() => {
+            // Reset display count to ensure fresh start
+            noWinsDisplayCount = 20;
             displayChampionsWithoutWins();
             // Fade in new content
             grid.style.opacity = '1';
@@ -482,9 +511,10 @@ function showMoreNoWins() {
 }
 
 function displayChampionsWithoutWins() {
+    // Always refresh the champions without wins data
     const championsWithoutWins = [];
     
-    // Check each champion for wins
+    // Check each champion for wins (fresh data)
     champions.forEach(champion => {
         const stats = getChampionStats(champion.id);
         if (stats.wins === 0) {
@@ -493,6 +523,11 @@ function displayChampionsWithoutWins() {
     });
     
     const container = document.querySelector('.recent-victories-container');
+    
+    // If we have more display count than available champions, adjust it
+    if (noWinsDisplayCount > championsWithoutWins.length) {
+        noWinsDisplayCount = Math.max(20, championsWithoutWins.length);
+    }
     
     if (championsWithoutWins.length === 0) {
         container.querySelector('p').textContent = 'You have at least one win with every champion!';
@@ -795,6 +830,12 @@ function clearAllData() {
         // Reset UI
         resetToDefaultView();
         displayRecentVictories();
+        
+        // If we're showing no wins view, refresh it
+        if (showingNoWins) {
+            displayChampionsWithoutWins();
+        }
+        
         showNotification('All arena data deleted');
         
         // Close dialog
