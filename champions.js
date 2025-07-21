@@ -169,6 +169,42 @@ const champions = [
     { name: "Zyra", id: "zyra" }
 ];
 
+function normalizeChampionIdForImageUrl(championId) {
+    // Special cases that need specific formatting for Data Dragon API
+    const specialCases = {
+        'aurelionsol': 'AurelionSol',
+        'drmundo': 'DrMundo',
+        'jarvaniv': 'JarvanIV',
+        'kogmaw': 'KogMaw',
+        'leblanc': 'Leblanc',
+        'leesin': 'LeeSin',
+        'missfortune': 'MissFortune',
+        'reksai': 'RekSai',
+        'velkoz': 'VelKoz',
+        'xinzhao': 'XinZhao',
+        'chogath': 'Chogath',
+        'khazix': 'Khazix',
+        'monkeyking': 'MonkeyKing',
+        'wukong': 'MonkeyKing',  // Wukong's API name is MonkeyKing
+        'twistedfate': 'TwistedFate',
+        'masteryi': 'MasterYi',
+        'tahmkench': 'TahmKench',
+        'belveth': 'Belveth',
+        'kaisa': 'Kaisa',
+        'renata': 'Renata'
+    };
+    
+    // Check if we have a special case
+    const lowerCaseId = championId.toLowerCase();
+    if (specialCases[lowerCaseId]) {
+        return specialCases[lowerCaseId];
+    }
+    
+    // Default case: capitalize first letter only
+    return championId.charAt(0).toUpperCase() + championId.slice(1);
+}
+
 function getChampionImageUrl(championId) {
-    return `https://ddragon.leagueoflegends.com/cdn/14.23.1/img/champion/${championId.charAt(0).toUpperCase() + championId.slice(1)}.png`;
+    const normalizedId = normalizeChampionIdForImageUrl(championId);
+    return `https://ddragon.leagueoflegends.com/cdn/14.23.1/img/champion/${normalizedId}.png`;
 }

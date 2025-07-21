@@ -9,20 +9,26 @@ const fileUploadArea = document.getElementById('fileUploadArea');
 const importResults = document.getElementById('importResults');
 const recentChampionsGrid = document.getElementById('recentChampionsGrid');
 const uploadIconBtn = document.getElementById('uploadIconBtn');
+const clearSearchBtn = document.getElementById('clearSearchBtn');
 const importSection = document.getElementById('importSection');
 const appTitle = document.getElementById('appTitle');
 const backupInput = document.getElementById('backupInput');
 
 function createChampionImageElement(championId, championName, className = 'champion-icon') {
+    const stats = getChampionStats(championId);
+    const hasWins = stats.wins > 0;
+    const finalClassName = hasWins ? `${className} has-wins` : className;
+    
     const img = document.createElement('img');
     img.src = getChampionImageUrl(championId);
     img.alt = championName;
-    img.className = className;
+    img.className = finalClassName;
     
     img.onerror = function() {
         this.style.display = 'none';
         const placeholder = document.createElement('div');
-        placeholder.className = className + ' champion-placeholder';
+        const placeholderClassName = hasWins ? `${className} champion-placeholder has-wins` : `${className} champion-placeholder`;
+        placeholder.className = placeholderClassName;
         placeholder.textContent = championName.charAt(0).toUpperCase();
         placeholder.title = championName;
         this.parentNode.insertBefore(placeholder, this);
@@ -107,8 +113,7 @@ function expandImportSection() {
 
 function resetToDefaultView() {
     // Clear search
-    searchInput.value = '';
-    searchResults.style.display = 'none';
+    clearSearch();
     
     // Hide champion info and match history
     championInfo.style.display = 'none';
@@ -122,13 +127,18 @@ function resetToDefaultView() {
 }
 
 function getChampionImageHTML(championId, championName, className = 'champion-icon') {
+    const stats = getChampionStats(championId);
+    const hasWins = stats.wins > 0;
+    const finalClassName = hasWins ? `${className} has-wins` : className;
+    const placeholderClassName = hasWins ? `${className} champion-placeholder has-wins` : `${className} champion-placeholder`;
+    
     return `<img src="${getChampionImageUrl(championId)}" 
                  alt="${championName}" 
-                 class="${className}"
+                 class="${finalClassName}"
                  onerror="this.style.display='none'; 
                          if(!this.nextElementSibling || !this.nextElementSibling.classList.contains('champion-placeholder')) {
                              const placeholder = document.createElement('div');
-                             placeholder.className = '${className} champion-placeholder';
+                             placeholder.className = '${placeholderClassName}';
                              placeholder.textContent = '${championName.charAt(0).toUpperCase()}';
                              placeholder.title = '${championName}';
                              this.parentNode.insertBefore(placeholder, this.nextSibling);
@@ -146,6 +156,10 @@ uploadIconBtn.addEventListener('click', () => {
     fileInput.click();
 });
 
+clearSearchBtn.addEventListener('click', () => {
+    clearSearch();
+});
+
 appTitle.addEventListener('click', resetToDefaultView);
 
 document.addEventListener('click', (e) => {
@@ -154,8 +168,27 @@ document.addEventListener('click', (e) => {
     }
 });
 
+function clearSearch() {
+    searchInput.value = '';
+    searchResults.innerHTML = '';
+    searchResults.style.display = 'none';
+    clearSearchBtn.classList.remove('show');
+    expandImportSection();
+}
+
+function updateClearButtonVisibility() {
+    if (searchInput.value.trim().length > 0) {
+        clearSearchBtn.classList.add('show');
+    } else {
+        clearSearchBtn.classList.remove('show');
+    }
+}
+
 function handleSearch() {
     const query = searchInput.value.trim().toLowerCase();
+    
+    // Update clear button visibility
+    updateClearButtonVisibility();
     
     if (query.length === 0) {
         searchResults.innerHTML = '';

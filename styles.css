@@ -9,7 +9,7 @@
 body {
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     background: linear-gradient(135deg, #0a1428 0%, #1e2761 100%);
-    min-height: 100vh;
+    background-attachment: fixed;
     color: #e2e8f0;
     line-height: 1.6;
 }
@@ -72,7 +72,7 @@ header p {
 #championSearch {
     flex: 1;
     padding: 1rem 1.5rem;
-    padding-right: 4rem;
+    padding-right: 7rem;
     font-size: 1rem;
     font-family: 'Inter', sans-serif;
     border: 2px solid #334155;
@@ -82,6 +82,36 @@ header p {
     outline: none;
     transition: all 0.2s ease;
     backdrop-filter: blur(10px);
+}
+
+.clear-search-btn {
+    position: absolute;
+    right: 3.5rem;
+    top: 50%;
+    transform: translateY(-50%);
+    background: rgba(239, 68, 68, 0.1);
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    border-radius: 0.5rem;
+    width: 2.5rem;
+    height: 2.5rem;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: all 0.2s ease;
+    color: #ef4444;
+    z-index: 10;
+}
+
+.clear-search-btn.show {
+    display: flex;
+}
+
+.clear-search-btn:hover {
+    background: rgba(239, 68, 68, 0.2);
+    border-color: #ef4444;
+    transform: translateY(-50%) scale(1.05);
 }
 
 .upload-icon-btn {
@@ -164,6 +194,11 @@ header p {
     transition: border-color 0.2s ease;
 }
 
+.champion-icon.has-wins {
+    border-color: #10b981;
+    box-shadow: 0 0 8px rgba(16, 185, 129, 0.3);
+}
+
 .champion-placeholder {
     display: flex;
     align-items: center;
@@ -176,6 +211,12 @@ header p {
     border: 2px solid #334155;
     transition: border-color 0.2s ease;
     cursor: pointer;
+}
+
+.champion-placeholder.has-wins {
+    border-color: #10b981;
+    box-shadow: 0 0 8px rgba(16, 185, 129, 0.3);
+    background: linear-gradient(135deg, #10b981, #059669);
 }
 
 .champion-placeholder.champion-icon {
@@ -345,6 +386,11 @@ header p {
     border: 2px solid #334155;
     transition: border-color 0.2s ease;
     flex-shrink: 0;
+}
+
+.recent-champion-icon.has-wins {
+    border-color: #10b981;
+    box-shadow: 0 0 10px rgba(16, 185, 129, 0.4);
 }
 
 .recent-champion-item:hover .recent-champion-icon,
@@ -772,6 +818,7 @@ header p {
 
 .champion-details {
     flex: 1;
+    width: 100%;
 }
 
 .champion-details h2 {
@@ -1065,6 +1112,13 @@ header p {
     }
     
     
+    .clear-search-btn {
+        width: 2.25rem;
+        height: 2.25rem;
+        font-size: 0.875rem;
+        right: 3rem;
+    }
+    
     .upload-icon-btn {
         width: 2.25rem;
         height: 2.25rem;
@@ -1072,7 +1126,7 @@ header p {
     }
     
     #championSearch {
-        padding-right: 3.5rem;
+        padding-right: 6rem;
     }
     
     .action-buttons {
