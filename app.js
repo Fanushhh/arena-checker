@@ -13,6 +13,10 @@ const clearSearchBtn = document.getElementById('clearSearchBtn');
 const importSection = document.getElementById('importSection');
 const appTitle = document.getElementById('appTitle');
 const backupInput = document.getElementById('backupInput');
+const arenaGodCount = document.getElementById('arenaGodCount');
+const progressFill = document.getElementById('progressFill');
+const progressText = document.getElementById('progressText');
+const arenaGodMilestone = document.getElementById('arenaGodMilestone');
 
 function createChampionImageElement(championId, championName, className = 'champion-icon') {
     const stats = getChampionStats(championId);
@@ -368,6 +372,8 @@ function saveMatch(championId, result) {
 function recordMatch(result) {
     if (!currentChampion) return;
     
+    const wasFirstWin = getChampionStats(currentChampion.id).wins === 0;
+    
     saveMatch(currentChampion.id, result);
     
     // Track recent victories
@@ -378,12 +384,20 @@ function recordMatch(result) {
     displayChampionInfo();
     displayMatchHistory();
     
+    // Update Arena God progress (with special notification for first wins)
+    if (result === 'win' && wasFirstWin) {
+        updateArenaGodProgress();
+        const progress = calculateArenaGodProgress();
+        showNotification(`🏆 First win with ${currentChampion.name}! (${progress.current}/60 Arena God progress)`);
+    } else {
+        updateArenaGodProgress();
+        showNotification(`${result === 'win' ? 'Win' : 'Loss'} recorded for ${currentChampion.name}!`);
+    }
+    
     // If we're showing no wins view and this was a win, refresh the list
     if (showingNoWins && result === 'win') {
         displayChampionsWithoutWins();
     }
-    
-    showNotification(`${result === 'win' ? 'Win' : 'Loss'} recorded for ${currentChampion.name}!`);
 }
 
 function displayMatchHistory() {
@@ -423,6 +437,9 @@ function deleteMatch(championId, matchId) {
     displayChampionInfo();
     displayMatchHistory();
     
+    // Update Arena God progress
+    updateArenaGodProgress();
+    
     // If we're showing no wins view, refresh it (in case champion now has no wins)
     if (showingNoWins) {
         displayChampionsWithoutWins();
@@ -456,9 +473,72 @@ document.addEventListener('keydown', (e) => {
     }
 });
 
-// Initialize recent victories on page load
+function calculateArenaGodProgress() {
+    let championsWithWins = 0;
+    
+    // Count champions that have at least 1 win
+    champions.forEach(champion => {
+        const stats = getChampionStats(champion.id);
+        if (stats.wins > 0) {
+            championsWithWins++;
+        }
+    });
+    
+    return {
+        current: championsWithWins,
+        target: 60,
+        percentage: Math.min((championsWithWins / 60) * 100, 100)
+    };
+}
+
+function updateArenaGodProgress() {
+    const progress = calculateArenaGodProgress();
+    
+    // Update count
+    arenaGodCount.textContent = progress.current;
+    
+    // Update progress bar with smooth animation
+    const progressBar = document.querySelector('.progress-bar');
+    progressBar.setAttribute('data-progress', progress.current);
+    
+    // Animate progress fill
+    requestAnimationFrame(() => {
+        progressFill.style.width = `${progress.percentage}%`;
+        progressText.textContent = `${Math.round(progress.percentage)}%`;
+    });
+    
+    // Show milestone achievement if reached
+    if (progress.current >= 60) {
+        arenaGodMilestone.style.display = 'block';
+        
+        // Add special celebration effect
+        if (!document.querySelector('.arena-god-container').classList.contains('achieved')) {
+            document.querySelector('.arena-god-container').classList.add('achieved');
+            showArenaGodCelebration();
+        }
+    } else {
+        arenaGodMilestone.style.display = 'none';
+        document.querySelector('.arena-god-container').classList.remove('achieved');
+    }
+}
+
+function showArenaGodCelebration() {
+    // Create celebration notification
+    showNotification('🏆 Arena God Achievement Unlocked! 🏆');
+    
+    // Add temporary celebration class for extra effects
+    const container = document.querySelector('.arena-god-container');
+    container.classList.add('celebration');
+    
+    setTimeout(() => {
+        container.classList.remove('celebration');
+    }, 3000);
+}
+
+// Initialize recent victories and arena god progress on page load
 document.addEventListener('DOMContentLoaded', () => {
     displayRecentVictories();
+    updateArenaGodProgress();
 });
 
 let showingNoWins = false;
@@ -772,6 +852,7 @@ function importFromJSON(file) {
             
             // Refresh displays
             displayRecentVictories();
+            updateArenaGodProgress();
             if (currentChampion) {
                 displayChampionInfo();
                 displayMatchHistory();
@@ -863,6 +944,7 @@ function clearAllData() {
         // Reset UI
         resetToDefaultView();
         displayRecentVictories();
+        updateArenaGodProgress();
         
         // If we're showing no wins view, refresh it
         if (showingNoWins) {
@@ -984,6 +1066,9 @@ function parseMatchFile(content, filename) {
     });
 
     displayImportResults(results, filename);
+    
+    // Update Arena God progress after import
+    updateArenaGodProgress();
     
     if (currentChampion) {
         displayChampionInfo();

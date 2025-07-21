@@ -87,6 +87,174 @@ header p {
     font-weight: 400;
 }
 
+.arena-god-progress {
+    margin-bottom: 2rem;
+}
+
+.arena-god-container {
+    background: rgba(15, 23, 42, 0.6);
+    backdrop-filter: blur(20px);
+    border: 1px solid #334155;
+    border-radius: 1rem;
+    padding: 2rem;
+    position: relative;
+    overflow: hidden;
+}
+
+.arena-god-container::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 215, 0, 0.1), transparent);
+    animation: shimmer 3s infinite;
+    pointer-events: none;
+}
+
+@keyframes shimmer {
+    0% { left: -100%; }
+    100% { left: 100%; }
+}
+
+.arena-god-header {
+    text-align: center;
+    margin-bottom: 1.5rem;
+}
+
+.arena-god-header h3 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+    background: linear-gradient(45deg, #ffd700, #ffed4a, #f59e0b);
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    text-shadow: 0 0 20px rgba(255, 215, 0, 0.3);
+}
+
+.arena-god-header p {
+    color: #cbd5e1;
+    font-size: 1rem;
+    margin: 0;
+}
+
+.arena-god-header #arenaGodCount {
+    font-weight: 700;
+    color: #ffd700;
+    text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+}
+
+.progress-bar-container {
+    margin-bottom: 1rem;
+}
+
+.progress-bar {
+    width: 100%;
+    height: 1.5rem;
+    background: rgba(30, 41, 59, 0.8);
+    border-radius: 0.75rem;
+    overflow: hidden;
+    position: relative;
+    border: 1px solid #475569;
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.progress-fill {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, #ffd700, #ffed4a, #f59e0b, #ffd700);
+    background-size: 200% 100%;
+    border-radius: 0.75rem;
+    transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+    animation: progressGlow 2s infinite alternate;
+    position: relative;
+    box-shadow: 0 0 20px rgba(255, 215, 0, 0.4);
+}
+
+@keyframes progressGlow {
+    0% { 
+        background-position: 0% 50%;
+        box-shadow: 0 0 20px rgba(255, 215, 0, 0.4);
+    }
+    100% { 
+        background-position: 100% 50%;
+        box-shadow: 0 0 30px rgba(255, 215, 0, 0.6);
+    }
+}
+
+.progress-fill::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 50%;
+    background: linear-gradient(to bottom, rgba(255, 255, 255, 0.3), transparent);
+    border-radius: 0.75rem 0.75rem 0 0;
+}
+
+.progress-text {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 0.875rem;
+    font-weight: 700;
+    color: #1e293b;
+    text-shadow: 0 1px 2px rgba(255, 255, 255, 0.8);
+    z-index: 10;
+    transition: color 0.3s ease;
+}
+
+.progress-bar[data-progress="0"] .progress-text {
+    color: #cbd5e1;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+.arena-god-milestone {
+    text-align: center;
+    padding: 1rem;
+    background: linear-gradient(135deg, #ffd700, #ffed4a);
+    border-radius: 0.75rem;
+    margin-top: 1rem;
+    animation: milestone-pulse 2s infinite;
+}
+
+@keyframes milestone-pulse {
+    0%, 100% { 
+        transform: scale(1);
+        box-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
+    }
+    50% { 
+        transform: scale(1.02);
+        box-shadow: 0 0 40px rgba(255, 215, 0, 0.8);
+    }
+}
+
+.milestone-text {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #1e293b;
+    text-shadow: 0 1px 2px rgba(255, 255, 255, 0.8);
+}
+
+.arena-god-container.achieved {
+    border-color: #ffd700;
+    box-shadow: 0 0 30px rgba(255, 215, 0, 0.5);
+}
+
+.arena-god-container.celebration {
+    animation: celebration-shake 0.5s ease-in-out infinite;
+}
+
+@keyframes celebration-shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-2px) rotate(-1deg); }
+    75% { transform: translateX(2px) rotate(1deg); }
+}
+
 .search-section {
     margin-bottom: 2rem;
 }
@@ -1162,6 +1330,30 @@ header p {
     
     #championSearch {
         padding-right: 6rem;
+    }
+    
+    .arena-god-container {
+        padding: 1.5rem;
+    }
+    
+    .arena-god-header h3 {
+        font-size: 1.25rem;
+    }
+    
+    .arena-god-header p {
+        font-size: 0.875rem;
+    }
+    
+    .progress-bar {
+        height: 1.25rem;
+    }
+    
+    .progress-text {
+        font-size: 0.75rem;
+    }
+    
+    .milestone-text {
+        font-size: 1rem;
     }
     
     .action-buttons {
