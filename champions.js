@@ -191,7 +191,8 @@ function normalizeChampionIdForImageUrl(championId) {
         'tahmkench': 'TahmKench',
         'belveth': 'Belveth',
         'kaisa': 'Kaisa',
-        'renata': 'Renata'
+        'renata': 'Renata',
+        'ksante': 'KSante'  // K'Sante needs special handling
     };
     
     // Check if we have a special case
@@ -200,8 +201,9 @@ function normalizeChampionIdForImageUrl(championId) {
         return specialCases[lowerCaseId];
     }
     
-    // Default case: capitalize first letter only
-    return championId.charAt(0).toUpperCase() + championId.slice(1);
+    // Default case: replace apostrophes with hyphens and capitalize first letter only
+    const normalized = championId.replace(/'/g, '');
+    return normalized.charAt(0).toUpperCase() + normalized.slice(1);
 }
 
 function getChampionImageUrl(championId) {

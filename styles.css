@@ -219,7 +219,7 @@ header p {
     background: linear-gradient(135deg, #ffd700, #ffed4a);
     border-radius: 0.75rem;
     margin-top: 1rem;
-    animation: milestone-pulse 2s infinite;
+    
 }
 
 @keyframes milestone-pulse {
