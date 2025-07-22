@@ -1130,11 +1130,19 @@ function findChampionByName(name) {
     );
     if (partialMatch) return partialMatch;
     
+    // Space-insensitive matching - remove all spaces and compare
+    const normalizedNameNoSpaces = normalizedName.replace(/\s+/g, '');
+    const spaceInsensitiveMatch = champions.find(champion => 
+        champion.name.toLowerCase().replace(/\s+/g, '') === normalizedNameNoSpaces
+    );
+    if (spaceInsensitiveMatch) return spaceInsensitiveMatch;
+    
     const aliasMatches = {
         'asol': 'aurelionsol',
         'aurelion': 'aurelionsol',
         'mundo': 'drmundo',
         'dr mundo': 'drmundo',
+        'drmundo': 'drmundo',
         'gp': 'gangplank',
         'j4': 'jarvaniv',
         'jarvan': 'jarvaniv',
